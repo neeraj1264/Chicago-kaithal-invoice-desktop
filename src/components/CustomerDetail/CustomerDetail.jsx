@@ -322,6 +322,7 @@ const CustomerDetail = () => {
                 font-family: Arial, sans-serif;
                 font-size: 12px;
                 width: 76mm;
+                margin: 1px;
               }
               table {
                 width: 90%;
