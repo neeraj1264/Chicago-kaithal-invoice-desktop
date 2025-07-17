@@ -545,11 +545,13 @@ const CustomerDetail = () => {
               padding: "0 2px",
             }}
           >
-            Opposite Swaraj Agency Kurukshetra,
+            SCO 47, Rudra Enclave, Opp.Suncity
             <br />
-            Road Pehowa(136-128),
+            Main Gate Kurukshetra Road,
             <br />
-            98966-42812 90340-62812
+            Kaithal(136-027),
+            <br />
+            98179-10801 70827-60100
           </p>
           <hr />
           <h2 style={{ textAlign: "center", margin: 0, fontSize: "20px" }}>
