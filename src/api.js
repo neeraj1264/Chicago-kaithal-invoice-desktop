@@ -1,4 +1,4 @@
-export const BASE_URL = 'https://chicago-kaithal-backend.vercel.app/'; 
+export const BASE_URL = 'https://chicago-kaithal-backend.vercel.app'; 
 // const BASE_URL = "http://localhost:5000/api";
 
 export const fetchCategories = async () => {
