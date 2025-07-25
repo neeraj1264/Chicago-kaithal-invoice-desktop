@@ -635,6 +635,13 @@ useEffect(() => {
         .icon span {
         display: block;
         }
+     .header-row,
+    .total-row { display: none !important; }
+      /* the bottom total row */ 
+    .product-item > div:first-child,
+    .price-cell {
+      display: none !important;
+    }
 </style>`;
 
     win.document.write(
@@ -870,12 +877,14 @@ useEffect(() => {
                 <ul className="product-list" id="sample-section">
                   <hr className="hr" />
                   <li
-                    className="product-item"
+                    className="product-item  header-row"
                     style={{ display: "flex"}}
                   >
                     <div
+                     className="price-cell"
                       style={{
-                        width: "10%",
+                        width: "15%",
+                        textAlign: "right",
                       }}
                     >
                       <span>No.</span>
@@ -968,7 +977,7 @@ useEffect(() => {
                           </button>
                         </div>
                       </div>{" "}
-                      <div
+                      <div className="price-cell"
                         style={{
                           width: "15%",
                           textAlign: "right",
@@ -986,7 +995,7 @@ useEffect(() => {
                   ))}
                   {/* <div style={{ textAlign: "center" }}>{dash}</div> */}
                   <hr className="hr" />
-                  <li className="product-item" style={{ display: "flex" }}>
+                  <li className="product-item total-row" style={{ display: "flex" }}>
                     <div
                       style={{
                         width: "77%",

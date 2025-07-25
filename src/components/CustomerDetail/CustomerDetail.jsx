@@ -322,10 +322,10 @@ const CustomerDetail = () => {
                 font-family: Arial, sans-serif;
                 font-size: 12px;
                 width: 76mm;
-                margin: 1px;
+                margin: 0;
               }
               table {
-                width: 90%;
+                width: 100%;
                 border-collapse: collapse;
               }
               th, td {
@@ -523,10 +523,10 @@ const CustomerDetail = () => {
         ref={invoiceRef}
         style={{ display: "none" }}
       >
-        <div style={{ border: "2px dotted", margin: "0 0 5px 0", padding: ".4rem" }}>
+        <div style={{ margin: "0 0 5px 0", padding: ".4rem" }}>
           {logoAvailable && (
             <img
-              src="/logo.jpg"
+              src="/logo.png"
               alt="Logo5"
               width={150}
               className="logo"
