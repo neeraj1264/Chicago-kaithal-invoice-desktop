@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { BASE_URL, fetchOrders, removeOrder, sendorder } from "../../api";
 import Header from "../header/Header";
 import { clearStore, deleteItem, getAll, saveItems } from "../../DB";
+import { toast } from "react-toastify";
 
 const History = () => {
   const [orders, setOrders] = useState([]);
@@ -16,6 +17,8 @@ const History = () => {
   const [showRemoveBtn, setShowRemoveBtn] = useState(false);
   const navigate = useNavigate();
   const [syncing, setSyncing] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [orderIdToDelete, setOrderIdToDelete] = useState(null);
 
   // Show remove button on long press
   let pressTimer;
@@ -45,33 +48,42 @@ const History = () => {
     });
   };
 
-  const handleRemoveOrder = async (orderId) => {
-    try {
-      // Check if 'advancefeatured' is true in localStorage
-      const advanceFeatured =
-        localStorage.getItem("advancedFeature") === "true";
+const requestToDelete = (orderId) => {
+  const advanceFeatured = localStorage.getItem("advancedFeature") === "true";
 
-      if (advanceFeatured) {
-        // Proceed with the removal if advancefeatured is true
-        await removeOrder(orderId);
+  if (!advanceFeatured) {
+    toast.error("Advance feature not granted.");
+    navigate("/advance");
+    return;
+  }
 
-        // Remove the order from the state
-        const updatedOrders = orders.filter((order) => order.id !== orderId);
-        setOrders(updatedOrders);
+  // Trigger modal instead of deletion
+  askDeleteConfirmation(orderId);
+};
 
-        setFilteredOrders((prevFilteredOrders) =>
-          prevFilteredOrders.filter((order) => order.id !== orderId)
-        );
+  const askDeleteConfirmation = (orderId) => {
+  setOrderIdToDelete(orderId);
+  setShowConfirm(true);
+};
 
-        console.log("Order removed successfully from both MongoDB and state");
-      } else {
-        alert("Advance feature not granted.");
-        navigate("/advance");
-      }
-    } catch (error) {
-      console.error("Error removing order:", error.message);
-    }
-  };
+const confirmDeletion = async () => {
+  try {
+    await removeOrder(orderIdToDelete);
+
+    setOrders((prev) => prev.filter((o) => o.id !== orderIdToDelete));
+    setFilteredOrders((prev) =>
+      prev.filter((o) => o.id !== orderIdToDelete)
+    );
+
+    toast.success("Order deleted.");
+  } catch (err) {
+    console.error("Error:", err);
+    toast.error("Delete failed.");
+  } finally {
+    setShowConfirm(false);
+    setOrderIdToDelete(null);
+  }
+};
 
   useEffect(() => {
     const getOrders = async () => {
@@ -306,7 +318,7 @@ const History = () => {
                     {showRemoveBtn && (
                       <button
                         className="remove-btn"
-                        onClick={() => handleRemoveOrder(order.id)}
+                        onClick={() => requestToDelete(order.id)}
                       >
                         Remove Order
                       </button>
@@ -373,6 +385,19 @@ const History = () => {
           </div>
         </>
       )}
+      {showConfirm && (
+  <div className="delete-modal-overlay">
+    <div className="delete-modal-content">
+      <h3>Confirm Deletion</h3>
+      <p>This will permanently delete the order.<br/> Are you sure?</p>
+      <div>
+      <button onClick={()=>setShowConfirm(false)}>Cancel</button>
+      <button onClick={confirmDeletion}>Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

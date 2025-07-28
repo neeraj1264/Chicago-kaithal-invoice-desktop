@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import "./Header.css";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useOnlineStatus } from "../../useOnlineStatus";
+import { toast } from "react-toastify";
 
 const Header = ({ headerName, setSearch, onClick }) => {
   const [isSearchVisible, setIsSearchVisible] = useState(false); // Track visibility of search input
@@ -40,7 +41,7 @@ const Header = ({ headerName, setSearch, onClick }) => {
     if (currentStatus) {
       navigate("/NewProduct");
     } else {
-      alert("You’re offline—cannot add a new product right now.");
+      toast.info("You’re offline—cannot add a new product right now.");
     }
     setIsChecking(false);
   };
@@ -56,7 +57,7 @@ const Header = ({ headerName, setSearch, onClick }) => {
     if (currentStatus) {
       navigate("/report");
     } else {
-      alert("You’re offline—cannot see the order report.");
+      toast.info("You’re offline—cannot see the order report.");
     }
     setIsChecking(false);
   };
@@ -72,7 +73,7 @@ const Header = ({ headerName, setSearch, onClick }) => {
     if (currentStatus) {
       navigate("/customer-data");
     } else {
-      alert("You’re offline—cannot see the customer data.");
+      toast.info("You’re offline—cannot see the customer data.");
     }
     setIsChecking(false);
   };

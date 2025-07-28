@@ -1,5 +1,5 @@
 export const BASE_URL = 'https://chicago-kaithal-backend.vercel.app/api'; 
-// const BASE_URL = "http://localhost:5000/api";
+// export const BASE_URL = "https://invoice-backend-phi.vercel.app/api";
 
 export const fetchCategories = async () => {
   const response = await fetch(`${BASE_URL}/categories`);

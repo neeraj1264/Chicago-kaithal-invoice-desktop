@@ -16,42 +16,12 @@ import {
 import { IoMdCloseCircle } from "react-icons/io";
 import Header from "../header/Header";
 import { fetchProducts, removeProduct } from "../../api";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { IoClose } from "react-icons/io5";
 import { getAll, saveItems } from "../../DB";
 import { useOnlineStatus } from "../../useOnlineStatus";
+import { useBogo } from "../Utils/invoice/useBogo";
 
-const toastOptions = {
-  position: "bottom-right",
-  autoClose: 2000,
-  pauseOnHover: true,
-  draggable: true,
-  theme: "dark",
-  width: "90%",
-};
-const BOGO_ELIGIBLE_PRODUCTS = {
-  "Italian sweet": ["med", "large"],
-  "Heat 'n' sweet": ["med", "large"],
-  "Hot stuff": ["med", "large"],
-  "Garlic to hot": ["med", "large"],
-  "Four season": ["med", "large"],
-  "Super spicy": ["med", "large"],
-  "Love in box (heart shape)": ["med", "large"],
-  "Cheese pizza": ["med", "large"],
-  "Chicago's spl. paneer": ["med", "large"],
-  "Peri peri boom": ["med", "large"],
-  "Mughlai retreat": ["med", "large"],
-  "Karahi paneer pizza": ["med", "large"],
-  "Makhni supreme": ["med", "large"],
-  "7 veggies": ["med", "large"],
-  "Mexicana overload": ["med", "large"],
-  "Tandoori paneer": ["med", "large"],
-  "Cheese pasta pizza": ["med", "large"],
-  "Spicy pasta pizza": ["med", "large"],
-  "Chicago's flood": ["med", "large"],
-  "Bursty cheese pizza": ["med"],
-};
 const Invoice = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [productsToSend, setProductsToSend] = useState([]);
@@ -65,6 +35,7 @@ const Invoice = () => {
   const { isOnline, checkBackend } = useOnlineStatus();
   const [isChecking, setIsChecking] = useState(false);
 
+  const { bogoEnabled, isThursday, applyBogo, toggleBogo } = useBogo();
   // default to “delivery”
   const [orderType, setOrderType] = useState("delivery");
 
@@ -92,32 +63,6 @@ const Invoice = () => {
 
   const navigate = useNavigate(); // For navigation
 
-  const [bogoEnabled, setBogoEnabled] = useState(false);
-  const [isThursday, setIsThursday] = useState(false);
-  // Effect to check day of week and automatically enable BOGO on Thursdays
-  useEffect(() => {
-    const checkDay = () => {
-      const today = new Date().getDay(); // Sunday = 0, Monday = 1, ..., Thursday = 4
-      const thursday = 4;
-      setIsThursday(today === thursday);
-
-      // Automatically enable BOGO on Thursdays
-      if (today === thursday) {
-        setBogoEnabled(true);
-      } else {
-        setBogoEnabled(false);
-      }
-    };
-
-    // Check immediately on load
-    checkDay();
-
-    // Set up interval to check every hour in case the app is left open
-    const interval = setInterval(checkDay, 60 * 60 * 1000); // Check every hour
-
-    return () => clearInterval(interval);
-  }, []);
-
   const guardAddProduct = async (e) => {
     e.preventDefault();
     if (isChecking) return;
@@ -129,7 +74,7 @@ const Invoice = () => {
     if (currentStatus) {
       navigate("/NewProduct");
     } else {
-      alert("You’re offline—cannot add a new product right now.");
+      toast.info("You’re offline—cannot add a new product right now.");
     }
     setIsChecking(false);
   };
@@ -398,27 +343,7 @@ useEffect(() => {
         }
 
         // NEW: Apply BOGO logic for non-variety products
-        if (bogoEnabled) {
-          // Check if product is eligible
-          if (BOGO_ELIGIBLE_PRODUCTS[product.name]) {
-            // Check if free item already exists
-            const freeExists = updated.some(
-              (p) =>
-                p.name === product.name && p.size === product.size && p.isFree
-            );
-
-            // Add free item if it doesn't exist
-            if (!freeExists) {
-              updated.push({
-                ...product,
-                price: 0,
-                originalPrice: product.price,
-                isFree: true,
-                quantity: 1,
-              });
-            }
-          }
-        }
+     updated = applyBogo(updated);
 
         localStorage.setItem("productsToSend", JSON.stringify(updated));
         return updated;
@@ -454,33 +379,7 @@ useEffect(() => {
           );
       });
       // NEW: Apply BOGO logic for variety products
-      if (bogoEnabled) {
-        newProducts.forEach((prod) => {
-          if (BOGO_ELIGIBLE_PRODUCTS[prod.name]) {
-            const eligibleSizes = BOGO_ELIGIBLE_PRODUCTS[prod.name];
-            const size = prod.size?.toLowerCase();
-
-            // Check if this specific size is eligible
-            if (size && eligibleSizes.includes(size)) {
-              // Check if free item already exists
-              const freeItemExists = updated.some(
-                (p) => p.name === prod.name && p.size === prod.size && p.isFree
-              );
-
-              // Add free item if it doesn't exist
-              if (!freeItemExists) {
-                updated.push({
-                  ...prod,
-                  price: 0,
-                  originalPrice: prod.price,
-                  isFree: true,
-                  quantity: prod.quantity,
-                });
-              }
-            }
-          }
-        });
-      }
+     updated = applyBogo(updated);
 
       localStorage.setItem("productsToSend", JSON.stringify(updated));
       return updated;
@@ -710,7 +609,6 @@ useEffect(() => {
 
   return (
     <div>
-      <ToastContainer />
       <Header
         headerName="Urban Pizzeria"
         setSearch={setSearch}
@@ -840,16 +738,7 @@ useEffect(() => {
               <input
                 type="checkbox"
                 checked={bogoEnabled}
-                onChange={() => {
-                  if (isThursday) {
-                    setBogoEnabled(!bogoEnabled);
-                  } else {
-                    toast.error(
-                      "BOGO offer is only available on Thursdays",
-                      toastOptions
-                    );
-                  }
-                }}
+                onChange={toggleBogo}
                 disabled={!isThursday}
                 style={{ marginRight: "0.5rem" }}
               />
